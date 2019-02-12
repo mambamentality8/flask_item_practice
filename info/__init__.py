@@ -28,14 +28,19 @@ def setup_log(config_name):
     logging.getLogger().addHandler(file_log_handler)
 
 
+# 配置数据库
+db = SQLAlchemy()
+redis_store = None
+
 def create_app(config_name):
     app = Flask(__name__)
+    #注册蓝图
+    from info.modules.index import index_blu
+    app.register_blueprint(index_blu)
     # 配置项目日志
     setup_log(config_name)
     # 配置
     app.config.from_object(Config[config_name])
-    # 配置数据库
-    db = SQLAlchemy(app)
     # 配置redis
     redis_store = redis.StrictRedis(host=Config.REDIS_HOST, port=Config.REDIS_PORT)
     # 开启CSRF保护
@@ -44,3 +49,4 @@ def create_app(config_name):
     Session(app)
 
     return app
+
