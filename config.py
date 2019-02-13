@@ -7,8 +7,8 @@ class Config(object):
     SECRET_KEY = 'stPkMpYjBvYF26UsrwxR898oyasgdbX853nOjShiIBZoCHzYKI76cpaRUzdU'
 
     # 基本数据库的配置
-    SQLALCHEMY_DATABASE_URI = 'mysql://root:mysql@localhost/info21'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_DATABASE_URI = "mysql://root:mysql@127.0.0.1:3306/information"
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
 
     # redis配置
     REDIS_HOST = "127.0.0.1"
@@ -20,7 +20,8 @@ class Config(object):
     SESSION_REDIS = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT)
     PERMANENT_SESSION_LIFETIME = 86400
 
-
+    #日志等级配置
+    LOG_LEVEL = logging.INFO
 class DevelopmentConfig(Config):
     """开发模式下的配置"""
     DEBUG = True
@@ -28,6 +29,7 @@ class DevelopmentConfig(Config):
 
 class ProductionConfig(Config):
     """生产模式下的配置"""
+    LOG_LEVEL = logging.ERROR
     pass
 
 

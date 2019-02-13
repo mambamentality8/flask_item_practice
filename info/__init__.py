@@ -1,16 +1,13 @@
+import logging
 from logging.handlers import RotatingFileHandler
 
-from config import Config, config
-from flask import Flask
-# 配置日志包
-import logging
-from flask_sqlalchemy import SQLAlchemy
-# 导入redis模块
 import redis
-# 使用flask_session扩展包
+from flask import Flask
 from flask_session import Session
-# 导入CSRF包
+from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
+
+from config import Config, config
 
 
 def setup_log(config_name):
@@ -40,7 +37,7 @@ def create_app(config_name):
     # 配置项目日志
     setup_log(config_name)
     # 配置
-    app.config.from_object(Config[config_name])
+    app.config.from_object(config[config_name].LOG_LEVEL)
     # 配置redis
     redis_store = redis.StrictRedis(host=Config.REDIS_HOST, port=Config.REDIS_PORT)
     # 开启CSRF保护

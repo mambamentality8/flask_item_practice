@@ -1,7 +1,7 @@
 from manage import app
 from . import index_blu
 
-@app.route("/")
+@index_blu.route("/")
 def hello_world():
     return "hello world!"
 
