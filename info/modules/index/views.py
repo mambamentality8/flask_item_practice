@@ -1,10 +1,7 @@
-from manage import app
 from . import index_blu
 
-@index_blu.route("/")
-def hello_world():
-    return "hello world!"
+from flask import render_template
 
-@index_blu.route('/index')
+@index_blu.route('/')
 def index():
-    return 'index'
+    return render_template('news/index.html')

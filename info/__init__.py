@@ -3,11 +3,15 @@ from logging.handlers import RotatingFileHandler
 
 import redis
 from flask import Flask
-from flask_session import Session
-from flask_sqlalchemy import SQLAlchemy
-from flask_wtf.csrf import CSRFProtect
-
 from config import Config, config
+from flask_sqlalchemy import SQLAlchemy
+
+from flask_wtf.csrf import CSRFProtect
+from flask_session import Session
+
+# 数据库
+db = SQLAlchemy()
+redis_store = None
 
 
 def setup_log(config_name):
@@ -25,25 +29,30 @@ def setup_log(config_name):
     logging.getLogger().addHandler(file_log_handler)
 
 
-# 配置数据库
-db = SQLAlchemy()
-redis_store = None
-
 def create_app(config_name):
-    app = Flask(__name__)
-    #注册蓝图
-    from info.modules.index import index_blu
-    app.register_blueprint(index_blu)
+    """通过传入不同的配置名字，初始化其对应配置的应用实例"""
+
     # 配置项目日志
     setup_log(config_name)
+    app = Flask(__name__)
     # 配置
-    app.config.from_object(config[config_name].LOG_LEVEL)
+    app.config.from_object(config[config_name])
+    # 配置数据库
+    db.init_app(app)
     # 配置redis
-    redis_store = redis.StrictRedis(host=Config.REDIS_HOST, port=Config.REDIS_PORT)
-    # 开启CSRF保护
+    global redis_store
+    redis_store = redis.StrictRedis(host=config[config_name].REDIS_HOST, port=config[config_name].REDIS_PORT)
+    # 开启csrf保护
     CSRFProtect(app)
     # 设置session保存位置
     Session(app)
+
+    # 注册蓝图
+    from info.modules.index import index_blu
+    app.register_blueprint(index_blu)
+    # 注册蓝图
+    from info.modules.passport import passport_blu
+    app.register_blueprint(passport_blu)
 
     return app
 
