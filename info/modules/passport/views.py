@@ -235,4 +235,15 @@ def login():
     # 5. 登录成功
     return jsonify(errno=RET.OK, errmsg="OK")
 
+@passport_blu.route("/logout", methods=['POST'])
+def logout():
+    """
+    清除session中的对应登录之后保存的信息
+    :return:
+    """
+    session.pop('user_id', None)
+    session.pop('nick_name', None)
+    session.pop('mobile', None)
 
+    # 返回结果
+    return jsonify(errno=RET.OK, errmsg="OK")
