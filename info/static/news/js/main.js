@@ -93,7 +93,7 @@ $(function(){
 		$(this).find('a')[0].click()
 	})
 
-    // TODO 登录表单提交
+    // 登录表单提交
     $(".login_form_con").submit(function (e) {
         e.preventDefault()
         var mobile = $(".login_form #mobile").val()
@@ -110,10 +110,33 @@ $(function(){
         }
 
         // 发起登录请求
+        var params = {
+            'mobile':mobile,
+            'password':password
+        };
+        // 发起ajax请求
+        $.ajax({
+            url:'/login',
+            type:'post',
+            data:JSON.stringify(params),
+            contentType:'application/json',
+            headers:{
+                'X-CSRFToken':getCookie('csrf_token')
+            },
+            success:function(data){
+                if (data.errno == '0'){
+                    location.reload()
+                }else{
+                    $('#login-password-err').html(data.errmsg);
+                    $('#login-password-err').show();
+                }
+            }
+        })
+
     })
 
 
-    // TODO 注册按钮点击
+    // 注册按钮点击
     $(".register_form_con").submit(function (e) {
         // 阻止默认提交操作
         e.preventDefault()
@@ -144,15 +167,40 @@ $(function(){
         }
 
         // 发起注册请求
+        // 构造参数对象
+        var params = {
+            'mobile':mobile,
+            'sms_code':smscode,
+            'password':password
+        };
+        // 发送ajax请求
+        $.ajax({
+            url:'/passport/register',
+            type:'post',
+            data:JSON.stringify(params),
+            contentType:'application/json',
+            headers:{
+                'X-CSRFToken':getCookie('csrf_token')
+            },
+            success:function(resp){
+                if (resp.errno == '0'){
+                    location.reload()
+                }else{
+                    alert(resp.errmsg);
+                    // $("#register-password-err").html(resp.errmsg);
+                    // $("#register-password-err").show();
+                }
+            }
+        })
 
     })
 })
 
 var imageCodeId = ""
 
-// TODO 生成一个图片验证码的编号，并设置页面中图片验证码img标签的src属性
+// 生成一个图片验证码的编号，并设置页面中图片验证码img标签的src属性
 function generateImageCode() {
-     // 1. 生成一个编号
+    // 1. 生成一个编号
     // 严格一点的使用uuid保证编号唯一， 不是很严谨的情况下，也可以使用时间戳
     imageCodeId = generateUUID();
 
@@ -181,7 +229,57 @@ function sendSMSCode() {
         return;
     }
 
-    // TODO 发送短信验证码
+    // 发送短信验证码
+
+    var params = {
+        "mobile": mobile,
+        "image_code": imageCode,
+        "image_code_id": imageCodeId
+    }
+
+    $.ajax({
+        // 请求地址
+        url: "/passport/smscode",
+        // 请求方式
+        method: "POST",
+        // 请求内容
+        data: JSON.stringify(params),
+        // 请求内容的数据类型
+        contentType: "application/json",
+        // 响应数据的格式
+        dataType: "json",
+        success: function (resp) {
+            if (resp.errno == "0") {
+                // 倒计时60秒，60秒后允许用户再次点击发送短信验证码的按钮
+                var num = 60;
+                // 设置一个计时器
+                var t = setInterval(function () {
+                    if (num == 1) {
+                        // 如果计时器到最后, 清除计时器对象
+                        clearInterval(t);
+                        // 将点击获取验证码的按钮展示的文本回复成原始文本
+                        $(".get_code").html("获取验证码");
+                        // 将点击按钮的onclick事件函数恢复回去
+                        $(".get_code").attr("onclick", "sendSMSCode();");
+                    } else {
+                        num -= 1;
+                        // 展示倒计时信息
+                        $(".get_code").html(num + "秒");
+                    }
+                }, 1000, 60)
+            } else {
+                // 表示后端出现了错误，可以将错误信息展示到前端页面中
+                $("#register-sms-code-err").html(resp.errmsg);
+                $("#register-sms-code-err").show();
+                // 将点击按钮的onclick事件函数恢复回去
+                $(".get_code").attr("onclick", "sendSMSCode();");
+                // 如果错误码是4004，代表验证码错误，重新生成验证码
+                if (resp.errno == "4004") {
+                    generateImageCode()
+                }
+            }
+        }
+    })
 }
 
 // 调用该函数模拟点击左侧按钮
@@ -217,4 +315,12 @@ function generateUUID() {
         return (c=='x' ? r : (r&0x3|0x8)).toString(16);
     });
     return uuid;
+}
+
+
+// 用户退出
+function logout(){
+    $.get('/logout',function (resp) {
+        location.reload()
+    })
 }
