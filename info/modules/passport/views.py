@@ -219,7 +219,7 @@ def login():
         return jsonify(errno=RET.USERERR, errmsg="用户不存在")
 
     #3. 校验密码
-    if not user.check_passowrd(password):
+    if not user.check_password(password):
         return jsonify(errno=RET.PWDERR, errmsg="密码错误")
 
     # 4. 保存用户登录状态

@@ -116,7 +116,7 @@ $(function(){
         };
         // 发起ajax请求
         $.ajax({
-            url:'/login',
+            url:'/passport/login',
             type:'post',
             data:JSON.stringify(params),
             contentType:'application/json',
@@ -318,9 +318,17 @@ function generateUUID() {
 }
 
 
-// 用户退出
-function logout(){
-    $.get('/logout',function (resp) {
-        location.reload()
+function logout() {
+    $.ajax({
+        url: "/passport/logout",
+        type: "post",
+        contentType: "application/json",
+        headers: {
+            "X-CSRFToken": getCookie("csrf_token")
+        },
+        success: function (resp) {
+            // 刷新当前界面
+            location.reload()
+        }
     })
 }
