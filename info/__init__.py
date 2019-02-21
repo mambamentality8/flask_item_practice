@@ -8,7 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from flask_wtf.csrf import CSRFProtect,generate_csrf
 from flask_session import Session
-
+from info.utils.common import do_index_class
 
 
 
@@ -53,9 +53,12 @@ def create_app(config_name):
     # 注册蓝图
     from info.modules.index import index_blu
     app.register_blueprint(index_blu)
-    # 注册蓝图
+
     from info.modules.passport import passport_blu
     app.register_blueprint(passport_blu)
+
+    from info.modules.news import news_blu
+    app.register_blueprint(news_blu)
 
     # 开启csrf保护
     CSRFProtect(app)
@@ -67,6 +70,9 @@ def create_app(config_name):
         # 通过 cookie 将值传给前端
         response.set_cookie("csrf_token", csrf_token)
         return response
+
+    # 添加自定义过滤器
+    app.add_template_filter(do_index_class, "index_class")
 
     return app
 
